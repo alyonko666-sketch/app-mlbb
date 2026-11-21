@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="./manifest.json" />
+  <title>موسوعة معدات MLBB</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-2: #0f172a;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --desc: #e2e8f0;
+      --accent: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    h1 {
+      margin: 0 0 16px;
+      font-size: 1.5rem;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 1.15rem;
+    }
+
+    h3 {
+      margin: 18px 0 10px;
+      font-size: 1rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input,
+    select,
+    button {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    button {
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    button:hover {
+      border-color: var(--accent);
+      background: #273549;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      margin: 6px 0;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      color: var(--desc);
+    }
+
+    .roles {
+      margin-top: 10px;
+      font-size: 0.82rem;
+      color: var(--accent);
+    }
+
+    .card-btn {
+      margin-top: 12px;
+      padding: 7px 12px;
+      font-size: 0.85rem;
+      align-self: flex-start;
+    }
+
+    #build-maker {
+      margin-top: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .build-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .build-meta {
+      margin: 0 0 14px;
+      font-size: 0.95rem;
+      color: var(--desc);
+    }
+
+    .build-slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .slot-empty {
+      border: 1px dashed #475569;
+      border-radius: 10px;
+      padding: 14px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.88rem;
+    }
+
+    .slot-filled {
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      padding: 12px;
+      background: var(--surface-2);
+    }
+
+    .slot-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .slot-cost {
+      font-size: 0.84rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .small-btn {
+      margin-top: 8px;
+      padding: 5px 10px;
+      font-size: 0.82rem;
+    }
+
+    .saved-builds {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .saved-build-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      background: var(--surface-2);
+    }
+
+    .saved-build-items {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin: 6px 0;
+    }
+
+    .saved-build-cost {
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <h1>موسوعة المعدات (<span id="count">0</span>)</h1>
+
+  <div class="toolbar">
+    <input id="search" type="search" placeholder="ابحث باسم المعدة أو الميزة..." />
+    <select id="category">
+      <option value="all">كل الأقسام</option>
+      <option value="defense">الدفاع</option>
+      <option value="attack">الهجوم الجسدي</option>
+      <option value="magic">السحري</option>
+      <option value="movement">الحركة</option>
+      <option value="jungle">مخالب الأدغال</option>
+      <option value="roaming">تحسين المتجول</option>
+    </select>
+    <select id="role">
+      <option value="all">كل الأدوار</option>
+      <option value="محاربين">محاربين</option>
+      <option value="رماة">رماة</option>
+      <option value="مدرعين">مدرعين</option>
+      <option value="سفاحين">سفاحين</option>
+      <option value="سحرة">سحرة</option>
+      <option value="متجولين">متجولين</option>
+    </select>
+    <button id="reset" type="button">إعادة ضبط</button>
+  </div>
+
+  <div id="grid" class="grid"></div>
+
+  <section id="build-maker">
+    <h2>بناء تشكيلة (6 عناصر)</h2>
+
+    <div class="build-controls">
+      <input id="build-name" type="text" placeholder="اسم التشكيلة (مثال: تشكيلة محاربين)" />
+      <select id="build-role">
+        <option value="محاربين">محاربين</option>
+        <option value="رماة">رماة</option>
+        <option value="مدرعين">مدرعين</option>
+        <option value="سفاحين">سفاحين</option>
+        <option value="سحرة">سحرة</option>
+        <option value="متجولين">متجولين</option>
+      </select>
+      <button id="save-build-btn" type="button">حفظ التشكيلة</button>
+      <button id="clear-build-btn" type="button">تفريغ الخانات</button>
+    </div>
+
+    <p class="build-meta">
+      التكلفة الإجمالية: <strong id="build-cost">0</strong> ذهب (<span id="build-count">0</span> / 6)
+    </p>
+
+    <div id="build-slots" class="build-slots"></div>
+
+    <h3>التشكيلات المحفوظة</h3>
+    <div id="saved-builds-list" class="saved-builds"></div>
+  </section>
+
+  <script src="./js/encyclopedia-store.js"></script>
+  <script>
+    const store = new EncyclopediaStore({ jsonUrl: "./data/items.json" });
+
+    let selectedBuildIds = [];
+
+    const countEl = document.getElementById("count");
+    const gridEl = document.getElementById("grid");
+    const searchEl = document.getElementById("search");
+    const categoryEl = document.getElementById("category");
+    const roleEl = document.getElementById("role");
+    const resetEl = document.getElementById("reset");
+
+    const buildNameEl = document.getElementById("build-name");
+    const buildRoleEl = document.getElementById("build-role");
+    const saveBuildBtn = document.getElementById("save-build-btn");
+    const clearBuildBtn = document.getElementById("clear-build-btn");
+    const buildCostEl = document.getElementById("build-cost");
+    const buildCountEl = document.getElementById("build-count");
+    const buildSlotsEl = document.getElementById("build-slots");
+    const savedBuildsListEl = document.getElementById("saved-builds-list");
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function addItemToBuild(itemId) {
+      const numericId = Number(itemId);
+      if (selectedBuildIds.length >= 6 || selectedBuildIds.includes(numericId)) return;
+      selectedBuildIds.push(numericId);
+      renderBuildBuilder();
+    }
+
+    function removeItemFromBuild(index) {
+      selectedBuildIds.splice(index, 1);
+      renderBuildBuilder();
+    }
+
+    function deleteSavedBuild(buildId) {
+      store.deleteBuild(buildId);
+      renderBuildBuilder();
+    }
+
+    function renderItemsGrid(state) {
+      const list = state.filteredItems || [];
+      countEl.textContent = `${list.length} / ${state.totalItems}`;
+
+      if (!list.length) {
+        gridEl.innerHTML = "<p>لا توجد نتائج مطابقة.</p>";
+        return;
+      }
+
+      gridEl.innerHTML = list.map((item) => {
+        const isSelected = selectedBuildIds.includes(Number(item.id));
+        const isFull = selectedBuildIds.length >= 6;
+        const btnLabel = isSelected
+          ? "مضاف للتشكيلة"
+          : isFull
+            ? "التشكيلة مكتملة (6/6)"
+            : "إضافة للتشكيلة";
+
+        return `
+          <article class="card">
+            <div>
+              <div class="top">
+                <span>${escapeHtml(item.categoryAr)} • ${escapeHtml(item.nameEn)}</span>
+                <span>${Number(item.cost) > 0 ? `${escapeHtml(item.cost)} ذهب` : "تحسين"}</span>
+              </div>
+              <h2>${escapeHtml(item.nameAr)}</h2>
+              <p><strong>الفائدة:</strong> ${escapeHtml(item.usefulFor)}</p>
+              <p><strong>الخاصية:</strong> ${escapeHtml(item.feature)}</p>
+              <div class="roles">الأدوار: ${escapeHtml((item.roles || []).join("، "))}</div>
+            </div>
+            <button
+              type="button"
+              class="card-btn"
+              onclick="addItemToBuild(${Number(item.id)})"
+              ${isSelected || isFull ? "disabled" : ""}
+            >
+              ${btnLabel}
+            </button>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderBuildBuilder() {
+      const chosenItems = selectedBuildIds
+        .map((id) => store.state.items.find((it) => Number(it.id) === Number(id)))
+        .filter(Boolean);
+
+      const totalCost = chosenItems.reduce((sum, it) => sum + Number(it.cost || 0), 0);
+      buildCountEl.textContent = chosenItems.length;
+      buildCostEl.textContent = totalCost;
+
+      buildSlotsEl.innerHTML = Array.from({ length: 6 }, (_, idx) => {
+        const item = chosenItems[idx];
+        if (!item) {
+          return `<div class="slot-empty">خانة ${idx + 1} فارغة</div>`;
+        }
+        return `
+          <div class="slot-filled">
+            <div class="slot-title">${escapeHtml(item.nameAr)}</div>
+            <div class="slot-cost">${Number(item.cost) > 0 ? `${escapeHtml(item.cost)} ذهب` : "تحسين"}</div>
+            <button type="button" class="small-btn" onclick="removeItemFromBuild(${idx})">إزالة</button>
+          </div>
+        `;
+      }).join("");
+
+      const builds = store.state.savedBuilds || [];
+      savedBuildsListEl.innerHTML = builds.length
+        ? builds.map((b) => {
+            const names = (b.itemIds || [])
+              .map((id) => store.state.items.find((it) => Number(it.id) === Number(id))?.nameAr)
+              .filter(Boolean)
+              .join("، ");
+            return `
+              <div class="saved-build-card">
+                <strong>${escapeHtml(b.name)}</strong> (${escapeHtml(b.role)})
+                <div class="saved-build-items">${escapeHtml(names || "بدون عناصر")}</div>
+                <div class="saved-build-cost">التكلفة: ${escapeHtml(b.totalCost || 0)} ذهب</div>
+                <button type="button" class="small-btn" onclick="deleteSavedBuild('${escapeHtml(b.id)}')">حذف</button>
+              </div>
+            `;
+          }).join("")
+        : "<p>لا توجد تشكيلات محفوظة بعد.</p>";
+    }
+
+    store.subscribe((state) => {
+      renderItemsGrid(state);
+      renderBuildBuilder();
+    });
+
+    store.init();
+
+    searchEl.addEventListener("input", (e) => store.setFilters({ search: e.target.value }));
+    categoryEl.addEventListener("change", (e) => store.setFilters({ category: e.target.value }));
+    roleEl.addEventListener("change", (e) => store.setFilters({ role: e.target.value }));
+
+    resetEl.addEventListener("click", () => {
+      searchEl.value = "";
+      categoryEl.value = "all";
+      roleEl.value = "all";
+      store.resetFilters();
+    });
+
+    saveBuildBtn.addEventListener("click", () => {
+      if (!selectedBuildIds.length) return;
+      store.saveBuild({
+        name: buildNameEl.value,
+        role: buildRoleEl.value,
+        itemIds: selectedBuildIds
+      });
+      buildNameEl.value = "";
+      selectedBuildIds = [];
+      renderItemsGrid(store.getSnapshot());
+      renderBuildBuilder();
+    });
+
+    clearBuildBtn.addEventListener("click", () => {
+      selectedBuildIds = [];
+      renderItemsGrid(store.getSnapshot());
+      renderBuildBuilder();
+    });
+  </script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch((err) => {
+          console.warn("Service Worker registration failed:", err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
