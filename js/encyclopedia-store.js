@@ -63,18 +63,25 @@ class EncyclopediaStore {
       }
 
       const data = await response.json();
-      if (!data || !Array.isArray(data.items)) {
+      const rawItems = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.items)
+          ? data.items
+          : null;
+
+      if (!rawItems) {
         throw new Error("صيغة ملف JSON غير صالحة");
       }
 
-      const mergedBuilds = this._mergeBuilds(
-        this.state.savedBuilds,
-        Array.isArray(data.savedBuilds) ? data.savedBuilds : []
-      );
+      const fileBuilds = !Array.isArray(data) && Array.isArray(data?.savedBuilds)
+        ? data.savedBuilds
+        : [];
 
-      this.state.app = data.app || this.state.app;
-      this.state.items = data.items;
-      this.state.totalItems = data.items.length;
+      const mergedBuilds = this._mergeBuilds(this.state.savedBuilds, fileBuilds);
+
+      this.state.app = (!Array.isArray(data) && data?.app) || this.state.app;
+      this.state.items = rawItems;
+      this.state.totalItems = rawItems.length;
       this.state.savedBuilds = mergedBuilds;
       this.state.lastSyncedAt = new Date().toISOString();
 
@@ -82,10 +89,16 @@ class EncyclopediaStore {
       this.emit();
       return this.getSnapshot();
     } catch (error) {
-      if (this.state.items.length === 0 && Array.isArray(this.fallbackData?.items)) {
-        this.state.items = this.fallbackData.items;
-        this.state.totalItems = this.fallbackData.items.length;
-        this.state.savedBuilds = Array.isArray(this.fallbackData.savedBuilds)
+      const fallbackItems = Array.isArray(this.fallbackData)
+        ? this.fallbackData
+        : Array.isArray(this.fallbackData?.items)
+          ? this.fallbackData.items
+          : null;
+
+      if (this.state.items.length === 0 && fallbackItems) {
+        this.state.items = fallbackItems;
+        this.state.totalItems = fallbackItems.length;
+        this.state.savedBuilds = Array.isArray(this.fallbackData?.savedBuilds)
           ? this.fallbackData.savedBuilds
           : [];
         this.emit();
